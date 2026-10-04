@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alle producten — RetroVault</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-active="producten">
+
+<header class="site-header" id="site-header"></header>
+
+<section class="section container">
+  <div class="eyebrow" style="margin-bottom:8px;">Catalogus</div>
+  <h1>Alle producten</h1>
+
+  <div class="toolbar">
+    <input type="text" class="search-input" id="search-input" placeholder="Zoek op naam...">
+    <select class="select" id="sort-select">
+      <option value="default">Sorteer: standaard</option>
+      <option value="price-asc">Prijs: laag naar hoog</option>
+      <option value="price-desc">Prijs: hoog naar laag</option>
+      <option value="name-asc">Naam: A-Z</option>
+    </select>
+  </div>
+
+  <div class="filter-bar" id="category-filters">
+    <button class="chip active" data-cat="all">Alles</button>
+    <button class="chip" data-cat="console">Consoles</button>
+    <button class="chip" data-cat="game">Android Games</button>
+    <button class="chip" data-cat="accessoire">Media & Games</button>
+  </div>
+  <div class="filter-bar" id="platform-filters">
+    <button class="chip active" data-platform="all">Alle platforms</button>
+    <button class="chip" data-platform="PSP">PSP</button>
+    <button class="chip" data-platform="PS1">PS1</button>
+    <button class="chip" data-platform="PS2">PS2</button>
+    <button class="chip" data-platform="PS3">PS3</button>
+    <button class="chip" data-platform="GBA">GBA</button>
+    <button class="chip" data-platform="N64">N64</button>
+    <button class="chip" data-platform="Nintendo">Nintendo</button>
+    <button class="chip" data-platform="Universeel">Universeel</button>
+  </div>
+
+  <p id="result-count" class="mono" style="font-size:12px; color:var(--paper-dim); margin-bottom:18px;"></p>
+
+  <div class="grid" id="product-grid"></div>
+  <div class="empty-state" id="empty-state" style="display:none;">
+    <div class="glyph">🔍</div>
+    <h3>Geen producten gevonden</h3>
+    <p>Probeer een andere zoekterm of filter.</p>
+  </div>
+</section>
+
+<footer class="site-footer" id="site-footer"></footer>
+
+<script src="products.js"></script>
+<script src="shop.js"></script>
+<script src="layout.js"></script>
+<script src="cards.js"></script>
+<script>
+  let state = { cat: "all", platform: "all", search: "", sort: "default" };
+
+  function readCatFromUrl(){
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get("cat");
+    if(cat && ["console","game","accessoire"].includes(cat)){
+      state.cat = cat;
+    }
+  }
+
+  function applyFilters(){
+    let items = PRODUCTS.slice();
+
+    if(state.cat !== "all"){
+      items = items.filter(p => p.category === state.cat);
+    }
+    if(state.platform !== "all"){
+      items = items.filter(p => p.platform === state.platform);
+    }
+    if(state.search.trim()){
+      const q = state.search.trim().toLowerCase();
+      items = items.filter(p => p.name.toLowerCase().includes(q) || p.short.toLowerCase().includes(q));
+    }
+    if(state.sort === "price-asc") items.sort((a,b) => a.price - b.price);
+    if(state.sort === "price-desc") items.sort((a,b) => b.price - a.price);
+    if(state.sort === "name-asc") items.sort((a,b) => a.name.localeCompare(b.name));
+
+    const grid = document.getElementById("product-grid");
+    const empty = document.getElementById("empty-state");
+    const count = document.getElementById("result-count");
+
+    if(items.length === 0){
+      grid.innerHTML = "";
+      empty.style.display = "block";
+    }else{
+      empty.style.display = "none";
+      grid.innerHTML = items.map(renderProductCard).join("");
+    }
+    count.textContent = `${items.length} product${items.length === 1 ? "" : "en"} gevonden`;
+  }
+
+  function setActiveChip(container, attr, value){
+    container.querySelectorAll(".chip").forEach(chip => {
+      chip.classList.toggle("active", chip.dataset[attr] === value);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    readCatFromUrl();
+
+    const catContainer = document.getElementById("category-filters");
+    const platformContainer = document.getElementById("platform-filters");
+    setActiveChip(catContainer, "cat", state.cat);
+
+    catContainer.addEventListener("click", (e) => {
+      const btn = e.target.closest(".chip");
+      if(!btn) return;
+      state.cat = btn.dataset.cat;
+      setActiveChip(catContainer, "cat", state.cat);
+      applyFilters();
+    });
+
+    platformContainer.addEventListener("click", (e) => {
+      const btn = e.target.closest(".chip");
+      if(!btn) return;
+      state.platform = btn.dataset.platform;
+      setActiveChip(platformContainer, "platform", state.platform);
+      applyFilters();
+    });
+
+    document.getElementById("search-input").addEventListener("input", (e) => {
+      state.search = e.target.value;
+      applyFilters();
+    });
+
+    document.getElementById("sort-select").addEventListener("change", (e) => {
+      state.sort = e.target.value;
+      applyFilters();
+    });
+
+    applyFilters();
+  });
+</script>
+</body>
+</html>
