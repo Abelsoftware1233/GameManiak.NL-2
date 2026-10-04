@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Winkelwagen — RetroVault</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-active="winkelwagen">
+
+<header class="site-header" id="site-header"></header>
+
+<section class="section container">
+  <div class="eyebrow" style="margin-bottom:8px;">Stap 1 van 3</div>
+  <h1>Winkelwagen</h1>
+
+  <div id="cart-content"></div>
+</section>
+
+<footer class="site-footer" id="site-footer"></footer>
+
+<script src="products.js"></script>
+<script src="shop.js"></script>
+<script src="layout.js"></script>
+<script>
+  function renderCart(){
+    const items = getCartItems();
+    const container = document.getElementById("cart-content");
+
+    if(items.length === 0){
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="glyph">🛒</div>
+          <h3>Je winkelwagen is leeg</h3>
+          <p>Voeg consoles, games of accessoires toe om te beginnen.</p>
+          <a href="producten.html" class="btn btn-primary">Bekijk producten</a>
+        </div>
+      `;
+      return;
+    }
+
+    const rows = items.map(({product, qty}) => `
+      <tr class="cart-row" data-id="${product.id}">
+        <td>
+          <div class="cart-item">
+            <div class="cart-thumb">${product.glyph}</div>
+            <div>
+              <div class="cart-item-name">
+                <a href="product.html?id=${product.id}">${product.name}</a>
+              </div>
+              <div class="cart-item-meta">${product.platform} &middot; ${categoryLabel(product.category)}</div>
+              <button class="remove-link" data-remove="${product.id}">Verwijderen</button>
+            </div>
+          </div>
+        </td>
+        <td class="mono">${formatPrice(product.price)}</td>
+        <td>
+          <div class="qty-control sm">
+            <button type="button" data-minus="${product.id}">−</button>
+            <input type="text" value="${qty}" data-qty-input="${product.id}" inputmode="numeric">
+            <button type="button" data-plus="${product.id}" ${qty >= product.stock ? "disabled" : ""}>+</button>
+          </div>
+        </td>
+        <td class="mono" style="text-align:right;">${formatPrice(product.price * qty)}</td>
+      </tr>
+    `).join("");
+
+    const totals = computeTotals();
+
+    container.innerHTML = `
+      <div class="cart-layout">
+        <div>
+          <table class="cart-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Prijs</th>
+                <th>Aantal</th>
+                <th style="text-align:right;">Totaal</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+          <div style="margin-top:20px;">
+            <a href="producten.html" class="btn btn-outline btn-sm">← Verder winkelen</a>
+          </div>
+        </div>
+
+        <div class="summary-panel">
+          <h3 style="margin-bottom:16px;">Overzicht</h3>
+          <div class="summary-row">
+            <span>Subtotaal</span>
+            <span class="price">${formatPrice(totals.subtotal)}</span>
+          </div>
+          <div class="summary-row">
+            <span>Verzending</span>
+            <span>${totals.shipping === 0 ? "Gratis" : formatPrice(totals.shipping)}</span>
+          </div>
+          <div class="summary-row total">
+            <span>Totaal</span>
+            <span class="price">${formatPrice(totals.total)}</span>
+          </div>
+
+          <p style="font-size:12px; margin-top:16px; padding:10px 12px; border:1px solid var(--phosphor-dim); color:var(--phosphor);">Na betaling kunt u uw bezorggegevens invullen en uw kleur product kiezen.</p>
+          <a href="checkout.html" class="btn btn-primary btn-block" style="margin-top:12px;">Afrekenen →</a>
+        </div>
+      </div>
+    `;
+
+    // Wire up quantity controls
+    container.querySelectorAll("[data-minus]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.minus;
+        const items = getCartItems();
+        const item = items.find(i => i.product.id === id);
+        if(item) setCartQty(id, item.qty - 1);
+        renderCart();
+      });
+    });
+    container.querySelectorAll("[data-plus]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.plus;
+        const items = getCartItems();
+        const item = items.find(i => i.product.id === id);
+        if(item) setCartQty(id, item.qty + 1);
+        renderCart();
+      });
+    });
+    container.querySelectorAll("[data-qty-input]").forEach(input => {
+      input.addEventListener("change", () => {
+        const id = input.dataset.qtyInput;
+        const val = Math.max(1, parseInt(input.value) || 1);
+        setCartQty(id, val);
+        renderCart();
+      });
+    });
+    container.querySelectorAll("[data-remove]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        removeFromCart(btn.dataset.remove);
+        showToast("Product verwijderd uit winkelwagen");
+        renderCart();
+      });
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", renderCart);
+</script>
+</body>
+</html>
