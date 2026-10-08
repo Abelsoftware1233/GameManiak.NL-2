@@ -540,22 +540,6 @@ const PRODUCTS = [
 
   // ---------------- OVERIGE ANDROID GAMES & APPS ----------------
   {
-    id: "p-slotpipes",
-    name: "Mario Slotpipes (Android)",
-    category: "game",
-    platform: "Universeel",
-    price: 2.50,
-    stock: 999,
-    glyph: "📱",
-    tag: null,
-    short: "Puzzelgame met slots en pijpen, voor Android.",
-    description: "Een Android-puzzelgame waarin je pijpen en slots met elkaar verbindt.",
-    specs: { "Platform": "Android", "Genre": "Puzzel", "Formaat": "Digitale download" },
-    paypalId: "AS8XU2UTZUFDA",
-    image: "https://pics.paypal.com/00/p/ZWIwNjliYzktNDVhYS00ZWY0LWI0MGEtZjlhOTk1NjE0ZjFh/image_2.PNG",
-    weroUrl: "https://buy.stripe.com/4gM7sE2lq9wVdOXdJz6Zy07"
-  },
-  {
     id: "p-fluppy-burd",
     name: "Fluppy Burd Blocks (Android)",
     category: "game",
