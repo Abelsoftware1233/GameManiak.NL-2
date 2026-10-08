@@ -1,5 +1,5 @@
 /* =========================================================
-   RETROVAULT — shared header & footer
+   GAMEMANIAK — shared header & footer
    Injected into any element with id="site-header" / "site-footer"
    data-active attribute on body sets the active nav link
    ========================================================= */
@@ -16,7 +16,7 @@ function renderHeader(){
       <a href="index.html" class="logo">
         <span class="dot"></span>GAMEMANIAK<span style="color:var(--paper-dim);font-size:11px;margin-left:4px;">.shop</span>
       </a>
-      <nav class="main-nav">
+      <nav class="main-nav" id="main-nav">
         ${navItem("index.html", "Home", "home")}
         ${navItem("producten.html", "Alle producten", "producten")}
         ${navItem("producten.html?cat=console", "Consoles", "consoles")}
@@ -24,14 +24,33 @@ function renderHeader(){
         ${navItem("producten.html?cat=accessoire", "Entertainment Apps", "accessoires")}
       </nav>
       <div class="header-actions">
-        <button class="nav-toggle" aria-label="Menu">☰</button>
-        <a href="winkelwagen.html" class="cart-link">
-          🛒 Winkelwagen
+        <button class="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="main-nav">☰</button>
+        <a href="winkelwagen.html" class="cart-link" aria-label="Winkelwagen">
+          <span class="cart-icon">🛒</span><span class="cart-label">Winkelwagen</span>
           <span class="cart-count" data-cart-count style="display:none;">0</span>
         </a>
       </div>
     </div>
   `;
+
+  // Mobiel menu open/dicht
+  const toggle = el.querySelector(".nav-toggle");
+  const nav = el.querySelector(".main-nav");
+  if(toggle && nav){
+    const setOpen = (open) => {
+      nav.classList.toggle("open", open);
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      toggle.textContent = open ? "✕" : "☰";
+    };
+    toggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setOpen(!nav.classList.contains("open"));
+    });
+    nav.querySelectorAll("a").forEach(a => a.addEventListener("click", () => setOpen(false)));
+    document.addEventListener("click", (e) => {
+      if(!el.contains(e.target)) setOpen(false);
+    });
+  }
 }
 
 function renderFooter(){
@@ -43,7 +62,7 @@ function renderFooter(){
         <div class="logo" style="margin-bottom:12px;">
           <span class="dot"></span>GAMEMANIAK
         </div>
-        <p style="max-width:32ch; color:var(--paper-dim); font-family:var(--font-mono); font-size:11.5px;">
+        <p style="max-width:32ch; font-size:12.5px;">
           Gloednieuwe retro consoles, games &amp; accessoires. Getest, en klaar om te verzenden & spelen.
         </p>
       </div>
